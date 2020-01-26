@@ -8,12 +8,21 @@ const collection = db.collection('messages');
 
 const message = document.getElementById('message');
 const form = document.querySelector('form');
+const messages = document.getElementById('messages');
+
+collection.get().then(snapshot => {
+  snapshot.forEach(doc => {
+    const li = document.createElement('li');
+    li.textContent = doc.data().message;
+    messages.appendChild(li);
+  });
+});
 
 form.addEventListener('submit', e => {
   e.preventDefault();
 
   collection.add({
-    messages: message.value,
+    message: message.value,
   })
     .then(doc => {
       console.log(`${doc.id} added.`);
