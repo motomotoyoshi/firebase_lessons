@@ -10,11 +10,13 @@ const message = document.getElementById('message');
 const form = document.querySelector('form');
 const messages = document.getElementById('messages');
 
-collection.orderBy('created').get().then(snapshot => {
-  snapshot.forEach(doc => {
-    const li = document.createElement('li');
-    li.textContent = doc.data().message;
-    messages.appendChild(li);
+collection.orderBy('created').onSnapshot(snapshot => {
+  snapshot.docChanges().forEach(change => {
+    if (change.type === 'added') {
+      const li = document.createElement('li');
+      li.textContent = change.doc.data().message;
+      messages.appendChild(li);
+    }
   });
 });
 
@@ -26,10 +28,6 @@ form.addEventListener('submit', e => {
     return;
   }
 
-  const li = document.createElement('li');
-  li.textContent = val;
-  messages.appendChild(li);
-  
   message.value = '';
   message.focus();
 
