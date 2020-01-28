@@ -6,6 +6,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const collection = db.collection('messages');
 const auth = firebase.auth();
+let me = null;
 
 const message = document.getElementById('message');
 const form = document.querySelector('form');
@@ -22,11 +23,13 @@ logout.addEventListener('click', () => {
 
 auth.onAuthStateChanged(user => {
   if (user) {
+    me = user;
     collection.orderBy('created').onSnapshot(snapshot => {
       snapshot.docChanges().forEach(change => {
         if (change.type === 'added') {
           const li = document.createElement('li');
-          li.textContent = change.doc.data().message;
+          const d = change.doc.data();
+          li.textContent = d.uid.substr(0, 8) + ': ' + d.message;
           messages.appendChild(li);
         }
       });
@@ -39,6 +42,7 @@ auth.onAuthStateChanged(user => {
     message.focus();
     return;
   }
+  me = null;
   console.log('Nobody is logged in.');
   login.classList.remove('hidden');
   [logout, form, messages].forEach(el => {
@@ -59,7 +63,8 @@ form.addEventListener('submit', e => {
 
   collection.add({
     message: val,
-    created: firebase.firestore.FieldValue.serverTimestamp()
+    created: firebase.firestore.FieldValue.serverTimestamp(),
+    uid: me ? me.uid : 'nobody',
   })
     .then(doc => {
       console.log(`${doc.id} added.`);
